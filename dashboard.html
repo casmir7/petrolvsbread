@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Petrol vs Bread Price in Lagos (Live Prediction) – Usulor Casmir Nnamdi</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f7f9fb;
+      color: #333;
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+
+    h2 small {
+      display: block;
+      font-weight: normal;
+      font-size: 14px;
+      color: #888;
+      margin-top: 5px;
+    }
+
+    form {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+
+    input[type="number"] {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      width: 150px;
+      transition: border-color 0.2s;
+    }
+
+    input[type="number"]:focus {
+      border-color: #00796b;
+      outline: none;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #00796b;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #004d40;
+    }
+
+    #predictionResult {
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+      color: #1e88e5;
+      margin-bottom: 20px;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+
+    @media (max-width: 600px) {
+      form {
+        flex-direction: column;
+      }
+      input[type="number"], button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>⛽️ Petrol vs 🍞 Bread Price in Lagos (2021–2025 + Live Prediction)<br><small>by Usulor Casmir Nnamdi</small></h2>
+
+  <form id="predictForm">
+    <label for="futurePetrolInput">Enter Future Petrol Price (₦):</label>
+    <input type="number" id="futurePetrolInput" required min="1" />
+    <button type="submit">Predict Bread Price</button>
+  </form>
+
+  <p id="predictionResult"></p>
+
+  <canvas id="priceChart"></canvas>
+
+  <script>
+    const months = [
+      'Jan 2021', 'Feb 2021', 'Mar 2021', 'Apr 2021', 'May 2021', 'Jun 2021',
+      'Jul 2021', 'Aug 2021', 'Sep 2021', 'Oct 2021', 'Nov 2021', 'Dec 2021',
+      'Jan 2022', 'Feb 2022', 'Mar 2022', 'Apr 2022', 'May 2022', 'Jun 2022',
+      'Jul 2022', 'Aug 2022', 'Sep 2022', 'Oct 2022', 'Nov 2022', 'Dec 2022',
+      'Jan 2023', 'Feb 2023', 'Mar 2023', 'Apr 2023', 'May 2023', 'Jun 2023',
+      'Jul 2023', 'Aug 2023', 'Sep 2023', 'Oct 2023', 'Nov 2023', 'Dec 2023',
+      'Jan 2024', 'Feb 2024', 'Mar 2024', 'Apr 2024', 'May 2024', 'Jun 2024',
+      'Jul 2024', 'Aug 2024', 'Sep 2024', 'Oct 2024', 'Nov 2024', 'Dec 2024',
+      'Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025'
+    ];
+
+    const petrolPrices = [
+      null, 168.06, null, null, 186.26, null,
+      164.08, 168.31, null, null, null, null,
+      null, 168.16, null, 165.13, null, null,
+      null, null, null, null, null, null,
+      null, 305.63, null, 207.71, null, null,
+      null, null, null, null, null, null,
+      null, null, null, null, 636.80, 626.94,
+      null, null, null, null, null, null,
+      null, null, null, 880.00
+    ];
+
+    const breadPrices = [
+      609.76, 609.76, 669.88, 605.79, 643.29, 609.76,
+      609.76, 609.76, 609.76, 609.76, 609.76, 609.76,
+      505.46, 427.5, 361.83, 300.0, 300.0, 300.0,
+      300.0, 300.0, 300.0, 300.0, 320.0, 300.0,
+      300.0, 300.0, 333.33, 350.0, 356.67, 422.58,
+      450.0, 450.0, 450.0, 450.0, 450.0, 450.0,
+      308.24, 308.04, 302.12, 301.71, 297.83, 309.58,
+      331.86, 333.97, 334.31, 341.23, 349.08, 352.26,
+      362.34, 427.4, 417.33, 390.52, 405.71, 407.96,
+      418.83, 443.24, 458.09, 462.52, 464.26, 445.92,
+      450.2, 440.09, 455.37, 468.14, 459.99
+    ];
+
+    const validX = [], validY = [];
+    for (let i = 0; i < petrolPrices.length; i++) {
+      if (petrolPrices[i] != null && breadPrices[i] != null) {
+        validX.push(petrolPrices[i]);
+        validY.push(breadPrices[i]);
+      }
+    }
+
+    function linearRegression(x, y) {
+      const n = x.length;
+      const sumX = x.reduce((a, b) => a + b, 0);
+      const sumY = y.reduce((a, b) => a + b, 0);
+      const sumXY = x.reduce((acc, val, i) => acc + val * y[i], 0);
+      const sumX2 = x.reduce((acc, val) => acc + val * val, 0);
+
+      const a = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+      const b = (sumY - a * sumX) / n;
+
+      return { a, b };
+    }
+
+    const { a, b } = linearRegression(validX, validY);
+
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: months,
+        datasets: [
+          {
+            label: 'Petrol Price (₦/L)',
+            data: petrolPrices,
+            borderColor: 'red',
+            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+            spanGaps: true,
+            tension: 0.4
+          },
+          {
+            label: 'Bread Price (₦/Loaf)',
+            data: breadPrices,
+            borderColor: 'orange',
+            backgroundColor: 'rgba(255, 165, 0, 0.1)',
+            spanGaps: true,
+            tension: 0.4
+          },
+          {
+            label: 'Predicted Bread Price',
+            data: [],
+            borderColor: 'blue',
+            borderDash: [5, 5],
+            borderWidth: 2,
+            tension: 0.4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: 'Petrol vs Bread Price in Lagos (Live Prediction)'
+          }
+        },
+        scales: {
+          y: {
+            title: {
+              display: true,
+              text: 'Price (₦)'
+            },
+            beginAtZero: false
+          }
+        }
+      }
+    });
+
+    document.getElementById('predictForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const input = document.getElementById('futurePetrolInput');
+      const petrolVal = parseFloat(input.value);
+      if (isNaN(petrolVal)) return;
+
+      const predicted = Math.round(a * petrolVal + b);
+
+      chart.data.labels.push(`₦${petrolVal} Petrol`);
+      chart.data.datasets[0].data.push(petrolVal);
+      chart.data.datasets[1].data.push(null);
+      chart.data.datasets[2].data.push(predicted);
+      chart.update();
+
+      document.getElementById('predictionResult').textContent =
+        `🧠 Predicted Bread Price: ₦${predicted.toLocaleString()} at ₦${petrolVal.toLocaleString()} petrol price`;
+
+      input.value = '';
+    });
+  </script>
+
+</body>
+</html>
