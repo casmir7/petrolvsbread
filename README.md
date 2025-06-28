@@ -6,7 +6,7 @@ Built and maintained by [Usulor Casmir Nnamdi](https://github.com/casmir7), this
 
 ## 🔧 Live Demo
 
-[**Try the Prediction Tool Here**](https://you)
+[**Try the Prediction Tool Here**](https://www.casmir.tech/dataproject1.html)
 
 ## 📌 Features
 
